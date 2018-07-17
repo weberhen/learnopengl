@@ -30,34 +30,34 @@ def main():
 
     glfw.make_context_current(window)
 
-    vertices = [0.5, 0.5, 0.0,
+    vertices = [-0.5, -0.5, 0.0,
                 0.5, -0.5, 0.0,
-                -0.5, -0.5, 0.0,
-                -0.5, 0.5, 0.0]
+                0.0, 0.5, 0.0]
     vertices = np.array(vertices, dtype=np.float32)
-
-    indices = [0, 1, 3,
-               1, 2, 3]
-    indices = np.array(indices, dtype=np.uint32)
 
     vertex_shader = """
     #version 330 core
-    layout (location = 0) in vec3 aPos;
-    
+    layout (location = 0) in vec3 aPos; // the position variable has attribute position 0
+
+    out vec4 vertexColor; // specify a color output to the fragment shader
+
     void main()
     {
-        gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+        gl_Position = vec4(aPos, 1.0); // see how we directly give a vec3 to vec4's constructor
+        vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
     }
     """
 
     fragment_shader = """
     #version 330 core
     out vec4 FragColor;
+      
+    uniform vec4 ourColor; // we set this variable in the OpenGL code.
     
     void main()
     {
-        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-    } 
+        FragColor = ourColor;
+    }
     """
 
     shader = OpenGL.GL.shaders.compileProgram(OpenGL.GL.shaders.compileShader(vertex_shader, GL_VERTEX_SHADER),
@@ -65,14 +65,10 @@ def main():
 
     VAO = glGenVertexArrays(1)
     VBO = glGenBuffers(1)  # vertex buffer object, which stores vertices in the GPU's memory.
-    EBO = glGenBuffers(1)  # Element Buffer Object
     glBindVertexArray(VAO)
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO)  # now, all calls will configure VBO
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)  # copy user-defined data into VBO
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * np.dtype(np.float32).itemsize, ctypes.c_void_p(0))
     glEnableVertexAttribArray(0)
@@ -93,9 +89,13 @@ def main():
         glClear(GL_COLOR_BUFFER_BIT)  # state-using function
 
         # render triangle
+        timeValue = glfw.get_time()
+        greenValue = (np.sin(timeValue) / 2.0) + 0.5
+        vertexColorLocation = glGetUniformLocation(shader, "ourColor")
         glUseProgram(shader)
+        glUniform4f(vertexColorLocation, 0.0, greenValue, 0.0, 1.0)
         glBindVertexArray(VAO)
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
+        glDrawArrays(GL_TRIANGLES, 0, 3)
 
         # check and call events and swap the buffers
         glfw.swap_buffers(window)
