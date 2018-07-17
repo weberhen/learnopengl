@@ -30,11 +30,15 @@ def main():
 
     glfw.make_context_current(window)
 
-    vertices = [-0.5, -0.5, 0.0,
+    vertices = [0.5, 0.5, 0.0,
                 0.5, -0.5, 0.0,
-                0.0, 0.5, 0.0]
-
+                -0.5, -0.5, 0.0,
+                -0.5, 0.5, 0.0]
     vertices = np.array(vertices, dtype=np.float32)
+
+    indices = [0, 1, 3,
+               1, 2, 3]
+    indices = np.array(indices, dtype=np.uint32)
 
     vertex_shader = """
     #version 330 core
@@ -59,14 +63,23 @@ def main():
     shader = OpenGL.GL.shaders.compileProgram(OpenGL.GL.shaders.compileShader(vertex_shader, GL_VERTEX_SHADER),
                                               OpenGL.GL.shaders.compileShader(fragment_shader, GL_FRAGMENT_SHADER))
 
+    VAO = glGenVertexArrays(1)
     VBO = glGenBuffers(1)  # vertex buffer object, which stores vertices in the GPU's memory.
+    EBO = glGenBuffers(1)  # Element Buffer Object
+    glBindVertexArray(VAO)
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO)  # now, all calls will configure VBO
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)  # copy user-defined data into VBO
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * np.dtype(np.float32).itemsize, ctypes.c_void_p(0))
     glEnableVertexAttribArray(0)
 
-    glUseProgram(shader)
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+    glBindVertexArray(0)
 
     glfw.set_framebuffer_size_callback(window, framebuffer_size_callback)
 
@@ -79,7 +92,10 @@ def main():
         glClearColor(0.2, 0.3, 0.3, 1.0)  # state-setting function
         glClear(GL_COLOR_BUFFER_BIT)  # state-using function
 
-        glDrawArrays(GL_TRIANGLES, 0, 3)
+        # render triangle
+        glUseProgram(shader)
+        glBindVertexArray(VAO)
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
 
         # check and call events and swap the buffers
         glfw.swap_buffers(window)
