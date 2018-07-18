@@ -231,9 +231,12 @@ def main():
 
         glUseProgram(light_shader)
         objectColorLoc = glGetUniformLocation(light_shader, "objectColor")
-        glUniform3fv(objectColorLoc, 1, 1.0, 0.5, 0.31)
+        object_color = glm.vec3(1.0, 0.5, 0.31)
+        glUniform3fv(objectColorLoc, 1, glm.value_ptr(object_color))
+
         lightLoc = glGetUniformLocation(light_shader, "lightColor")
-        glUniform3fv(lightLoc, 1, 1.0, 1.0, 1.0)
+        light_color = glm.vec3(1.0, 1.0, 1.0)
+        glUniform3fv(lightLoc, 1, glm.value_ptr(light_color))
         lightPosLoc = glGetUniformLocation(light_shader, "lightPos")
         glUniform3fv(lightPosLoc, 1, glm.value_ptr(light_pos))
 
