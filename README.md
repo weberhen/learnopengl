@@ -9,3 +9,5 @@ glfw
 numpy
 
 pyrr
+
+pil
