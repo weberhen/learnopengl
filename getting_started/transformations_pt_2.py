@@ -1,5 +1,5 @@
 # Henrique Weber, 2018
-# adapted from https://learnopengl.com/Getting-started/Hello-Triangle
+# adapted from https://learnopengl.com/Getting-started/Transformations
 # This file is licensed under the MIT License.
 
 import glfw

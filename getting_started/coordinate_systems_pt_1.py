@@ -1,11 +1,12 @@
 # Henrique Weber, 2018
-# adapted from https://learnopengl.com/Getting-started/Shaders
+# adapted from https://learnopengl.com/Getting-started/Coordinate-Systems
 # This file is licensed under the MIT License.
 
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
+import glm
 
 
 def framebuffer_size_callback(window, width, height):
@@ -22,7 +23,9 @@ def main():
     if not glfw.init():
         return
 
-    window = glfw.create_window(800, 600, "LearnOpenGL", None, None)
+    screen_width = 800
+    screen_height = 600
+    window = glfw.create_window(screen_width, screen_height, "LearnOpenGL", None, None)
 
     if not window:
         glfw.terminate()
@@ -30,10 +33,23 @@ def main():
 
     glfw.make_context_current(window)
 
-    vertices = [-0.5, -0.5, 0.0, 1.0, 0.0, 0.0,
+    vertices = [0.5, 0.5, 0.0, 1.0, 0.0, 0.0,
                 0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-                0.0, 0.5, 0.0, 0.0, 0.0, 1.0, ]
+                -0.5, -0.5, 0.0, 0.0, 0.0, 1.0,
+                -0.5, 0.5, 0.0, 1.0, 1.0, 0.0]
     vertices = np.array(vertices, dtype=np.float32)
+
+    indices = [0, 1, 3,
+               1, 2, 3]
+    indices = np.array(indices, dtype=np.uint32)
+
+    model = glm.mat4(1.0)
+    model = glm.rotate(model, glm.radians(-55.0), glm.vec3(1.0, 0.0, 0.0))
+
+    view = glm.mat4(1.0)
+    view = glm.translate(view, glm.vec3(0.0, 0.0, -3.0))
+
+    projection = glm.perspective(glm.radians(45.0), screen_width / screen_height, 0.1, 100.0)
 
     vertex_shader = """
     #version 330 core
@@ -41,10 +57,13 @@ def main():
     layout (location = 1) in vec3 aColor; // the color variable has attribute position 1
       
     out vec3 ourColor; // output a color to the fragment shader
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
     
     void main()
     {
-        gl_Position = vec4(aPos, 1.0);
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
         ourColor = aColor; // set ourColor to the input color we got from the vertex data
     }  
     """
@@ -65,10 +84,14 @@ def main():
 
     VAO = glGenVertexArrays(1)
     VBO = glGenBuffers(1)  # vertex buffer object, which stores vertices in the GPU's memory.
+    EBO = glGenBuffers(1)
     glBindVertexArray(VAO)
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO)  # now, all calls will configure VBO
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)  # copy user-defined data into VBO
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
     # position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * np.dtype(np.float32).itemsize, ctypes.c_void_p(0))
@@ -95,13 +118,18 @@ def main():
         glClear(GL_COLOR_BUFFER_BIT)  # state-using function
 
         # render triangle
-        timeValue = glfw.get_time()
-        greenValue = (np.sin(timeValue) / 2.0) + 0.5
-        vertexColorLocation = glGetUniformLocation(shader, "ourColor")
         glUseProgram(shader)
-        glUniform4f(vertexColorLocation, 0.0, greenValue, 0.0, 1.0)
+        modelLoc = glGetUniformLocation(shader, "model")
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm.value_ptr(model))
+
+        viewLoc = glGetUniformLocation(shader, "view")
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm.value_ptr(view))
+
+        projectionLoc = glGetUniformLocation(shader, "projection")
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm.value_ptr(projection))
+
         glBindVertexArray(VAO)
-        glDrawArrays(GL_TRIANGLES, 0, 3)
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
 
         # check and call events and swap the buffers
         glfw.swap_buffers(window)
