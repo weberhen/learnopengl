@@ -1,5 +1,5 @@
 # Henrique Weber, 2018
-# adapted from https://learnopengl.com/Getting-started/Camera
+# adapted from https://learnopengl.com/Lighting/Colors
 # This file is licensed under the MIT License.
 
 import glfw

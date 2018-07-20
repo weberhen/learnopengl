@@ -1,5 +1,5 @@
 # Henrique Weber, 2018
-# adapted from https://learnopengl.com/Getting-started/Camera
+# adapted from https://learnopengl.com/Lighting/Colors
 # This file is licensed under the MIT License.
 
 import glfw
@@ -188,15 +188,6 @@ def main():
 
     glBindVertexArray(cubeVAO)
 
-    # VAO = glGenVertexArrays(1)
-    # lightVAO = glGenVertexArrays(1)
-    # glBindVertexArray(lightVAO)
-    # VBO = glGenBuffers(1)  # vertex buffer object, which stores vertices in the GPU's memory.
-    # glBindVertexArray(VAO)
-    #
-    # glBindBuffer(GL_ARRAY_BUFFER, VBO)  # now, all calls will configure VBO
-    # glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)  # copy user-defined data into VBO
-
     # position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * np.dtype(np.float32).itemsize, ctypes.c_void_p(0))
     glEnableVertexAttribArray(0)
@@ -215,29 +206,8 @@ def main():
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * np.dtype(np.float32).itemsize, ctypes.c_void_p(0))
     glEnableVertexAttribArray(0)
 
-    # glBindVertexArray(0)
-
     glfw.set_framebuffer_size_callback(window, framebuffer_size_callback)
     glEnable(GL_DEPTH_TEST)
-
-    # # render triangle
-    # glUseProgram(light_shader)
-    #
-    # projectionLoc = glGetUniformLocation(light_shader, "projection")
-    # glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm.value_ptr(projection))
-    #
-    # objectColorLoc = glGetUniformLocation(light_shader, "objectColor")
-    # glUniform3fv(objectColorLoc, 1, GL_FALSE, glm.value_ptr(glm.vec3(1.0, 0.5, 0.31)))
-    # lightLoc = glGetUniformLocation(light_shader, "lightColor")
-    # glUniform3fv(lightLoc, 1, GL_FALSE, glm.value_ptr(glm.vec3(1.0, 1.0, 1.0)))
-    #
-    # view = glm.lookAt(camera_pos, camera_pos + camera_front, camera_up)
-    # viewLoc = glGetUniformLocation(light_shader, "view")
-    # glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm.value_ptr(view))
-    #
-    # glUseProgram(shader)
-    #
-    # glBindVertexArray(lightVAO)
 
     # render loop
     while not glfw.window_should_close(window):
